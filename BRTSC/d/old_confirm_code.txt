@@ -1,0 +1,49 @@
+////// เงินฝาก
+$d_c_s = $l_c+$s_c;
+				for($i=0; $i<ceil($d_c/3); $i++){ ?>
+                  <tr>
+                    <td><?=$type_details[$d_c_s]?>
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                      <?php
+					if($amt[$d_c_s] != 0){ 
+						echo number_format($amt[$d_c_s++],2);				
+					}else{$d_c_s++;}
+					?></td>
+                    <td><?=$type_details[$d_c_s]?>
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                      <?php
+					if($amt[$d_c_s] != 0){ 
+						echo number_format($amt[$d_c_s++],2);				
+					}else{$d_c_s++;}
+					?></td>
+                    <td><?=$type_details[$d_c_s]?>
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                      <?php
+					if($amt[$d_c_s] != 0){ 
+						echo number_format($amt[$d_c_s++],2);				
+					}else{$d_c_s++;}
+					?></td>
+                  </tr>
+                  <?php }
+
+////// หนี้
+require "../s/s.ref_collno.php"; 
+	if($Num_Rows != 0){
+	?>
+              <tr>
+                <td align="left">&nbsp;</td>
+                <td align="left"><strong>4.</strong></td>
+                <td colspan="6" align="left"><strong>ค้ำประกัน</strong></td>
+              </tr>
+              <tr>
+                <td align="left">&nbsp;</td>
+                <td colspan="7" align="left"><table width="98%" border="0" cellspacing="2" cellpadding="3">
+               <?php
+			   $ao = 0;
+			   for($i=0; $i<ceil($Num_Rows/3); $i++){ ?>
+                  <tr>
+                    <td><?=$coll_name[$ao++]?></td>
+                    <td><?=$coll_name[$ao++]?></td>
+                    <td><?=$coll_name[$ao++]?></td>
+                  </tr>
+               <?php }

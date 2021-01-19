@@ -1,0 +1,52 @@
+﻿<style>
+@font-face {
+  font-family: 'TH sarabun new';
+  src:  url('../fonts/THSarabunNew.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'TH sarabun new';
+  src:  url('../fonts/THSarabunNew Bold.ttf') format('truetype');
+  font-weight: bold;
+  font-style: normal;
+}
+#div {font-family:"TH sarabun new", sans-serif}
+
+
+/* ข้อความหัวข้อใหญ่ */
+.a{font-family:"TH sarabun new", sans-serif;
+	font-size:23px;	
+	line-height:20%;
+	margin-right:60px;
+	margin-left:75px}
+
+/* ข้อความรายละเอียดตรงกลาง */	
+.b{font-family:"TH sarabun new", sans-serif;
+	font-size:20px;
+	line-height:125%;
+	max-width:570px;
+	margin-left:85px}
+
+/* ข้อความต้องกล่องรับวันที่ */
+.c{font-family:"TH sarabun new", sans-serif;
+	font-size:18px;
+	line-height:110%;
+	margin-right:65px;
+	margin-left:75px}
+
+/* ข้อความ ที่.../... กับ เขียนที่ */
+.d{font-family:"TH sarabun new", sans-serif;
+	font-size:20px;
+	line-height:120%;
+	margin-right:70px;
+	margin-left:75px;
+	}
+
+/* ข้อความในกรอบข้อความใหญ่ */	
+.f {font-family:"TH sarabun new", sans-serif;
+	font-size:20px;
+	line-height:130%;
+	}
+
+</style>

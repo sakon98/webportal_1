@@ -1,0 +1,149 @@
+<?php
+@header('Content-Type: text/html; charset=tis-620');
+?>
+<meta http-equiv="Content-Type" content="text/html; charset=tis-620" />
+<?php require "../s/s.Status.php"; ?>
+<table width="95%" border="0" align="center" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="right"><strong><font size="4" face="Tahoma">ข้อมูลสรุปการใช้งานระบบ</font></strong><br />
+    <font color="#0000FF" size="2" face="Tahoma">Status Infomation</font></td>
+  </tr>
+  <tr>
+    <td align="right"><hr color="#999999" size="1"/></td>
+  </tr>
+</table>
+<table width="95%" border="0" align="center" cellpadding="3" cellspacing="6">
+  <tr>
+    <td width="52%" align="right">จำนวนสมาชิกทั้งหมดที่ลงทะเบียน </td>
+    <td width="13%" align="center" bgcolor="#CCCCCC"><?=$sum_member?></td>
+    <td width="35%" align="left">คน</td>
+  </tr>
+<?php if($confirm2use == 1){	?>
+  <tr>
+    <td align="right">จำนวนสมาชิกที่อนุมัติการใช้งานแล้ว</td>
+    <td align="center" bgcolor="#CCCCCC"><?=$sum_approve?></td>
+    <td align="left">คน</td>
+  </tr>
+  <tr>
+    <td align="right">&nbsp;</td>
+    <td align="center">&nbsp;</td>
+    <td align="left">&nbsp;</td>
+  </tr>
+  <?php } ?>
+</table>
+<table width="95%" border="0" align="center" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="right"><strong><font size="4" face="Tahoma">สถิติการเข้าใช้ระบบ</font></strong><br />
+    <font color="#0000FF" size="2" face="Tahoma">Statistics</font></td>
+  </tr>
+  <tr>
+    <td align="right"><hr color="#999999" size="1"/></td>
+  </tr>
+</table>
+<center>
+<form id="form1" name="form1" method="post" action="administrator.php">
+            <select name="slyear" id="slyear" onchange= "this.form.submit()" style="width: 129px;height: 24px;">
+
+          <option  value=""> - เลือกปี -</option> 
+          <?php
+
+			$strSQL1="SELECT                MIN(YEAR(date_log))+543 AS MIN_LYEAR,
+							MAX(YEAR(date_log))+543 AS MAX_LYEAR 
+							FROM log_action";
+			$objQuery1 = mysql_query($strSQL1) or die ("Error Query [".$strSQL1."]");
+			
+			while($objResult1 = mysql_fetch_array($objQuery1)){
+                            
+                                $min_year = $objResult1['MIN_LYEAR'];
+                                $max_year = $objResult1['MAX_LYEAR'];
+                                $max = $max_year - 543;
+
+				for($j=$max_year;$j>=$min_year;$j--){
+                                    
+                                    $year = $j;
+                                    $year_cs = $year - 543;
+                                
+                                echo "<option value=".$year_cs."> <center>".$year."</center></option>";
+                               
+                                }
+			}
+	?>
+         </select>
+            </form> </center>
+
+<table width="95%" border="0" align="center" cellpadding="3" cellspacing="6">
+  <tr>
+    <td align="center"><table width="65%" border="0" cellspacing="0" cellpadding="0">
+<?php if($_REQUEST["slyear"] != ""){
+      'เข้าเเบบเลือก';
+     $max = $_REQUEST["slyear"];
+      $max;
+
+} else {
+
+     'เข้าเเบบไม่เลือก';
+      $max;
+      
+} ?>
+    
+      <tr>
+        <td bgcolor="#999999">
+    <table width="100%" border="0" align="center" cellpadding="3" cellspacing="1">
+        
+         
+        
+        
+   <?php
+			$thaimonth=array("","มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฏาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม");
+			GLOBAL $conn;
+			$strSQL="SELECT 
+							MONTH(date_log) AS LMONTH, YEAR(date_log)+543 AS LYEAR, 
+							COUNT(USER) AS LCOUNTFULL ,
+							COUNT(DISTINCT USER) AS LCOUNT 
+							FROM log_action
+                                                        WHERE DATE_FORMAT(date_log,'%Y') = '$max'
+							GROUP BY MONTH(date_log) 
+							ORDER BY YEAR(date_log),MONTH(date_log) ASC";
+			$objQuery = mysql_query($strSQL) or die ("Error Query [".$strSQL."]");
+			$i=0;
+			while($objResult = mysql_fetch_array($objQuery)){
+				$statmonth[$i] = $objResult['LMONTH'];
+				$statyear[$i] = $objResult['LYEAR'];
+				$statcountfull[$i] = $objResult['LCOUNTFULL'];
+				$statcount[$i] = $objResult['LCOUNT'];
+				$i++;
+			}
+			//count($statmonth);?>
+
+      <tr>
+        <td width="36%" height="36" align="center" bgcolor="#0066FF"><strong>ประจำเดือน</strong></td>
+        <td align="center" bgcolor="#0066FF"><strong>จำนวนการใช้งาน</strong></td>
+        <td align="center" bgcolor="#0066FF"><strong>สมาชิกที่เข้าระบบ</strong></td>
+        </tr>
+                 <?php
+			for($i=0;$i<count($statmonth);$i++){
+			?>
+      <tr>
+        <td align="center" bgcolor="#FFFFFF"><?=$thaimonth[intval($statmonth[$i])]?> 
+          <?=$statyear[$i]?> </td>
+        <td width="30%" align="center" bgcolor="#FFFF99"><table width="65%" border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td width="70%" align="right"><?=number_format($statcountfull[$i],0)?></td>
+            <td width="30%" align="right">ครั้ง</td>
+          </tr>
+        </table></td>
+        <td width="30%" align="center" bgcolor="#CCCCCC">
+          <table width="65%" border="0" cellspacing="0" cellpadding="0">
+            <tr>
+              <td width="70%" align="right"><?=number_format($statcount[$i],0)?></td>
+              <td width="30%" align="right">คน</td>
+            </tr>
+          </table></td>
+        </tr>
+      <?php } ?>  
+    </table>       
+        </td>
+      </tr>
+    </table></td>
+  </tr>
+</table>

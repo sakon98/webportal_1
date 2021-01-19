@@ -1,0 +1,360 @@
+<?php
+header("Content-Type: image/png; charset=utf-8");
+putenv("NLS_LANG=AMERICAN_AMERICA.TH8TISASCII");  
+$IPSERVER = '192.168.0.226';
+$SERVICEDB = 'gcoop';
+$USER = 'iscodoa';
+$PASSWORD = 'iscodoa';
+
+$objConnect = oci_connect($USER,$PASSWORD,$IPSERVER.'/'.$SERVICEDB,'AL32UTF8');                      
+	
+if(!$objConnect){
+	echo '<script type="text/javascript"> window.alert("ไม่สามารถเชื่อมต่อกับ ฐานข้อมูล Oracle ได้ กรุณาลองใหม่ภายหลัง") </script> ';
+}
+
+$member_no = $_REQUEST["MEMBER_NO"];
+$slip_date = $_REQUEST["RECV_PERIOD"];
+
+#COUNT SLIP
+$getrowslip = "SELECT COUNT(*) AS C_ROW FROM (     
+						SELECT 
+							KPD.LOANCONTRACT_NO AS LOANCONTRACT_NO,
+							KPD.SEQ_NO AS SEQ					
+						FROM 
+							KPTEMPRECEIVEDET KPD, KPUCFKEEPITEMTYPE KUK
+						WHERE 
+							KPD.KEEPITEMTYPE_CODE = KUK.KEEPITEMTYPE_CODE
+							AND KPD.MEMBER_NO = '".$member_no."'
+							AND KPD.RECV_PERIOD = '".$slip_date."'
+							AND KPD.POSTING_STATUS = 0
+					UNION
+						SELECT 
+							KMD.LOANCONTRACT_NO AS LOANCONTRACT_NO,
+							KMD.SEQ_NO AS SEQ
+						FROM 
+							KPMASTRECEIVEDET KMD, KPUCFKEEPITEMTYPE KUK
+						WHERE 
+							KMD.KEEPITEMTYPE_CODE = KUK.KEEPITEMTYPE_CODE
+							AND KMD.MEMBER_NO = '".$member_no."'
+							AND KMD.RECV_PERIOD = '".$slip_date."'
+					) ";
+
+$resultDatarow = oci_parse($objConnect,$getrowslip);
+oci_execute ($resultDatarow);
+$rowDataOrarow = oci_fetch_array($resultDatarow,OCI_ASSOC);
+
+$TransactionCount = $rowDataOrarow['C_ROW'];
+
+$slip_width = 1240;
+$slip_height = 757;
+
+if($TransactionCount > 1){
+    $slip_height = $slip_height + (40 * $TransactionCount-1);
+}
+
+$im = imagecreate($slip_width , $slip_height);
+imagecolorallocate($im, 255, 255, 255);
+$text_color = imagecolorallocate($im, 0, 0, 0);
+$gray_color = imagecolorallocate($im, 203, 203, 203);
+
+$logo = imagecreatefrompng('../img/logo.png');
+$logox = imagesx($logo);
+$logoy = imagesx($logo);
+
+$logo_resize = imagecreatetruecolor(130, 130);
+imagecopyresampled($logo_resize, $logo, 0, 0, 0, 0, 130, 130, $logox, $logoy);
+imagecopymerge($im, $logo_resize, 50, 20, 0, 0, 130, 130, 100);
+
+$font = 'c:/windows/fonts/THSarabun.ttf';
+$fontBold = 'c:/windows/fonts/THSarabun Bold.ttf';
+
+#MEMBER_INFO
+$dataoramember = "SELECT MUP.PRENAME_DESC AS PRENAME,
+								MB.MEMB_NAME AS NAME,
+								MB.MEMB_SURNAME AS SURNAME,
+								MBG1.MEMBGROUP_DESC  AS MEMBGROUP_DESC1,
+								TRIM(MB.MEMBGROUP_CODE) AS MEMBGROUP_CODE,
+								TRIM(TO_CHAR(DECODE(MB.ACCUM_INTEREST,0,null,MB.ACCUM_INTEREST),'99G999G999G999D00')) AS ACCUM_INTEREST
+							FROM 
+								MBMEMBMASTER MB,
+								MBUCFPRENAME MUP,
+								MBUCFMEMBGROUP MBG1,
+								MBUCFMEMBTYPE MBT
+							WHERE 
+								( MB.MEMBGROUP_CODE = MBG1.MEMBGROUP_CODE (+)) 
+								AND ( MB.PRENAME_CODE = MUP.PRENAME_CODE ) 
+								AND ( MB.MEMBTYPE_CODE = MBT.MEMBTYPE_CODE )  
+								AND MB.MEMBER_NO = '".$member_no."' 
+								AND MB.MEMBER_STATUS = '1' ";
+$resultDatamember = oci_parse($objConnect,$dataoramember);
+oci_execute ($resultDatamember);
+$rowDataOramember = oci_fetch_array($resultDatamember,OCI_ASSOC);
+
+#SLIP_DATE
+$dataoraslip = "SELECT * FROM (     
+						SELECT 
+							TO_CHAR(KPD.POSTING_DATE, 'DD/MM/YYYY','NLS_CALENDAR=''THAI BUDDHA') AS SLIP_DATE,
+							KPD.KPSLIP_NO AS SLIP_NO
+						FROM 
+							KPTEMPRECEIVEDET KPD, KPUCFKEEPITEMTYPE KUK
+						WHERE 
+							KPD.KEEPITEMTYPE_CODE = KUK.KEEPITEMTYPE_CODE
+							AND KPD.MEMBER_NO = '".$member_no."'
+							AND KPD.RECV_PERIOD = '".$slip_date."'
+							AND KPD.POSTING_STATUS = 0
+					UNION
+						SELECT 
+							TO_CHAR(KMD.POSTING_DATE, 'DD/MM/YYYY','NLS_CALENDAR=''THAI BUDDHA') AS  SLIP_DATE,
+							KMD.KPSLIP_NO AS SLIP_NO
+						FROM 
+							KPMASTRECEIVEDET KMD, KPUCFKEEPITEMTYPE KUK
+						WHERE 
+							KMD.KEEPITEMTYPE_CODE = KUK.KEEPITEMTYPE_CODE
+							AND KMD.MEMBER_NO = '".$member_no."'
+							AND KMD.RECV_PERIOD = '".$slip_date."'
+					) ";
+$resultDataslip = oci_parse($objConnect,$dataoraslip);
+oci_execute ($resultDataslip);
+$rowDataOraslip = oci_fetch_array($resultDataslip,OCI_ASSOC);
+
+// coop name
+imagettftext($im, 33, 0, (1240/2)/1.75, 70, $text_color, $fontBold, 'สหกรณ์ออมทรัพย์กรมวิชาการเกษตร จำกัด');
+imagettftext($im, 33, 0, 560, 130, $text_color, $fontBold, 'ใบรับเงิน');
+
+//header
+imagettftext($im, 20, 0, 30, 200, $text_color, $fontBold, 'เลขที่');
+imagettftext($im, 20, 0, 150, 200, $text_color, $font, (isset($rowDataOraslip['SLIP_NO']) ? GetFormatSlip($rowDataOraslip['SLIP_NO']) : ""));
+
+imagettftext($im, 20, 0, 30, 240, $text_color, $fontBold, 'ได้รับเงินจาก');
+imagettftext($im, 20, 0, 150, 240, $text_color, $font, $rowDataOramember['PRENAME'].$rowDataOramember['NAME'].' '.$rowDataOramember['SURNAME']);
+
+imagettftext($im, 20, 0, 30, 280, $text_color, $fontBold, 'หน่วยงาน');
+imagettftext($im, 20, 0, 150, 280, $text_color, $font, (isset($rowDataOramember['MEMBGROUP_CODE']) ? $rowDataOramember['MEMBGROUP_CODE'].' - '.$rowDataOramember['MEMBGROUP_DESC1'] : ""));
+
+imagettftext($im, 20, 0, 660, 200, $text_color, $fontBold, 'วันที่');
+imagettftext($im, 20, 0, 790, 200, $text_color, $font, (isset($rowDataOraslip['SLIP_DATE']) ? ConvertDate($rowDataOraslip['SLIP_DATE'],'long') : ""));
+
+imagettftext($im, 20, 0, 660, 240, $text_color, $fontBold, 'เลขทะเบียน');
+imagettftext($im, 20, 0, 790, 240, $text_color, $font, $member_no);
+
+imagettftext($im, 20, 0, 660, 280, $text_color, $fontBold, 'ดอกเบี้ยสะสม');
+imagettftext($im, 20, 0, 790, 280, $text_color, $font, (isset($rowDataOramember['ACCUM_INTEREST']) ? $rowDataOramember['ACCUM_INTEREST'] : ""));
+
+//Transaction title
+imageline($im, 0, 320, 1240, 320, $gray_color);
+imagettftext($im, 20, 0, 50, 360, $text_color, $fontBold, 'ลำดับที่');
+imagettftext($im, 20, 0, 210, 360, $text_color, $fontBold, 'รายการ/สัญญา');
+imagettftext($im, 20, 0, 490, 360, $text_color, $fontBold, 'งวดที่');
+imagettftext($im, 20, 0, 620, 360, $text_color, $fontBold, 'เงินต้น');
+imagettftext($im, 20, 0, 750, 360, $text_color, $fontBold, 'ดอกเบี้ย');
+imagettftext($im, 20, 0, 900, 360, $text_color, $fontBold, 'รวมเงิน');
+imagettftext($im, 20, 0, 1060, 360, $text_color, $fontBold, 'คงเหลือ');
+imageline($im, 0, 380, 1240, 380, $gray_color);
+
+#PAYMENT
+$getdatapayment = "SELECT * FROM (     
+						SELECT 
+							KUK.KEEPITEMTYPE_DESC AS KEEPITEMTYPE_DESC,
+							KPD.LOANCONTRACT_NO AS LOANCONTRACT_NO,
+							to_char(DECODE(KPD.PERIOD,0,null,KPD.PERIOD),'9G999G999') AS PERIOD,
+							to_char(DECODE(KPD.PRINCIPAL_PAYMENT,0,null,KPD.PRINCIPAL_PAYMENT),'99G999G999G999D00') AS PRNBAL,
+							to_char(DECODE(KPD.INTEREST_PAYMENT,0,null,KPD.INTEREST_PAYMENT),'99G999G999G999D00') AS INT,
+							to_char(DECODE(KPD.ITEM_PAYMENT * KUK.SIGN_FLAG,0,null,KPD.ITEM_PAYMENT * KUK.SIGN_FLAG),'99G999G999G999D00') AS SUM_PAY,
+							to_char(DECODE(KPD.ITEM_BALANCE,0,null,KPD.ITEM_BALANCE),'99G999G999G999D00') AS BAL,
+							KPD.SEQ_NO AS SEQ					
+						FROM 
+							KPTEMPRECEIVEDET KPD, KPUCFKEEPITEMTYPE KUK
+						WHERE 
+							KPD.KEEPITEMTYPE_CODE = KUK.KEEPITEMTYPE_CODE
+							AND KPD.MEMBER_NO = '".$member_no."'
+							AND KPD.RECV_PERIOD = '".$slip_date."'
+							AND KPD.POSTING_STATUS = 0
+					UNION
+						SELECT 
+							KUK.KEEPITEMTYPE_DESC AS KEEPITEMTYPE_DESC,
+							KMD.LOANCONTRACT_NO AS LOANCONTRACT_NO,
+							to_char(DECODE(KMD.PERIOD,0,null,KMD.PERIOD),'9G999G999') AS PERIOD,
+							to_char(DECODE(KMD.PRINCIPAL_PAYMENT,0,null,KMD.PRINCIPAL_PAYMENT),'99G999G999G999D00') AS PRNBAL,
+							to_char(DECODE(KMD.INTEREST_PAYMENT,0,null,KMD.INTEREST_PAYMENT),'99G999G999G999D00') AS INT,
+							to_char(DECODE(KMD.ITEM_PAYMENT * KUK.SIGN_FLAG,0,null,KMD.ITEM_PAYMENT * KUK.SIGN_FLAG),'99G999G999G999D00') AS SUM_PAY,
+							to_char(DECODE(KMD.ITEM_BALANCE,0,null,KMD.ITEM_BALANCE),'99G999G999G999D00') AS BAL,
+							KMD.SEQ_NO AS SEQ
+						FROM 
+							KPMASTRECEIVEDET KMD, KPUCFKEEPITEMTYPE KUK
+						WHERE 
+							KMD.KEEPITEMTYPE_CODE = KUK.KEEPITEMTYPE_CODE
+							AND KMD.MEMBER_NO = '".$member_no."'
+							AND KMD.RECV_PERIOD = '".$slip_date."'
+					) ORDER BY SEQ ";
+$resultDatapayment = oci_parse($objConnect,$getdatapayment);
+oci_execute ($resultDatapayment);
+
+//Transaction
+$total = 0;
+$i = 0;
+$arrLoan = array();
+while($rowDataOrapayment = oci_fetch_array($resultDatapayment,OCI_ASSOC)){
+	$total += str_replace( ',','', $rowDataOrapayment['SUM_PAY'] );
+    imagettftext($im, 20, 0, 70, 420 + (40 * $i), $text_color, $font, ($i+1));
+    imagettftext($im, 20, 0, 150, 420 + (40 * $i), $text_color, $font, $rowDataOrapayment['KEEPITEMTYPE_DESC'].' '.(isset($rowDataOrapayment['LOANCONTRACT_NO']) ? $rowDataOrapayment['LOANCONTRACT_NO'] : ""));
+    imagettftext($im, 20, 0, 460, 420 + (40 * $i), $text_color, $font, (isset($rowDataOrapayment['PERIOD']) ? $rowDataOrapayment['PERIOD'] : ""));
+    imagettftext($im, 20, 0, 540, 420 + (40 * $i), $text_color, $font, (isset($rowDataOrapayment['PRNBAL']) ? $rowDataOrapayment['PRNBAL'] : ""));
+    imagettftext($im, 20, 0, 685, 420 + (40 * $i), $text_color, $font, (isset($rowDataOrapayment['INT']) ? $rowDataOrapayment['INT'] : ""));
+    imagettftext($im, 20, 0, 830, 420 + (40 * $i), $text_color, $font, (isset($rowDataOrapayment['SUM_PAY']) ? $rowDataOrapayment['SUM_PAY'] : ""));
+    imagettftext($im, 20, 0, 990, 420 + (40 * $i), $text_color, $font, (isset($rowDataOrapayment['BAL']) ? $rowDataOrapayment['BAL'] : ""));
+	if(isset($rowDataOrapayment['LOANCONTRACT_NO'])){
+		$getloan = "select lncontmaster.loancontract_no AS LOANCONTRACT_NO,   
+							substr(lncontmaster.trnfrom_contno,0,8) AS CONTNO,    
+							lncontmaster.trnfrom_memno AS MEMNO,
+							mup.prename_desc || mb.memb_name || ' ' || mb.memb_surname AS FULL_NAME
+							from lncontmaster join lnucfcontlaw on lncontmaster.contlaw_status = lnucfcontlaw.contlaw_status
+							left outer join lnucfloanobjective on lncontmaster.loanobjective_code = lnucfloanobjective.loanobjective_code                              
+							and lncontmaster.loantype_code = lnucfloanobjective.loantype_code
+							left join mbmembmaster mb on lncontmaster.trnfrom_memno = mb.member_no,
+							mbucfprename mup where mb.prename_code = mup.prename_code and lncontmaster.loancontract_no = '".$rowDataOrapayment['LOANCONTRACT_NO']."'  ";
+		$resultDataloan = oci_parse($objConnect,$getloan);
+		oci_execute ($resultDataloan);
+		$rowDataOraloan = oci_fetch_array($resultDataloan,OCI_ASSOC);
+		if(isset($rowDataOraloan['CONTNO'])){
+			$arrLoan[] = 'รับโอนจาก : ทะเบียน '.$rowDataOraloan['MEMNO'].' '.$rowDataOraloan['FULL_NAME'].' เลขสัญญา '.$rowDataOraloan['CONTNO'];
+			#$slip_height += 40;
+		}
+	} 
+	$i++;
+}
+#TRNFORM
+if(sizeof($arrLoan) > 0){
+	imageline($im, 0, $slip_height - 360 , 1240, $slip_height - 360, $gray_color);
+	$k = 0;
+	foreach( $arrLoan as $value ){
+		$slip_height += 40;
+		imagettftext($im, 20, 0, 150, ($slip_height - 365), $text_color, $font, $value);
+		$k++;
+	}
+}
+//sum
+imageline($im, 0, $slip_height - 340, 1240, $slip_height - 340, $gray_color);
+
+imagettftext($im, 20, 0, 200, $slip_height - 290, $text_color, $fontBold, '( -'.convertthai($total).'- )');
+imagettftext($im, 20, 0, 750, $slip_height - 290, $text_color, $fontBold, 'ยอดสุทธิ');
+imagettftext($im, 20, 0, 880, $slip_height - 290, $text_color, $fontBold, number_format($total,2));
+
+imageline($im, 0, $slip_height - 260, 1240, $slip_height - 260, $gray_color);
+
+//footer
+imagettftext($im, 20, 0, 160, $slip_height - 150, $text_color, $fontBold, 'ผู้จัดการ');
+$mg = imagecreatefrompng('../img/mg.png');
+$mgx = imagesx($mg);
+$mgy = imagesy($mg);
+imagecopymerge($im, $mg, 250, $slip_height - 230, 0, 0, $mgx, $mgy, 100);
+
+imagettftext($im, 20, 0, 650, $slip_height - 150, $text_color, $fontBold, 'เจ้าหน้าที่ผู้รับเงิน');
+$fn = imagecreatefrompng('../img/fn.png');
+$fnx = imagesx($fn);
+$fny = imagesy($fn);
+imagecopymerge($im, $fn, 820, $slip_height - 210, 0, 0, $fnx, $fny, 100);
+
+imagettftext($im, 19, 0, (1240/2)/2, $slip_height - (60 + sizeof($arrLoan)*15), $text_color, $font, 'ใบรับเงินประจำเดือนจะสมบูรณ์ก็ต่อเมื่อทางสหกรณ์ได้รับเงินที่เรียกเก็บเรียบร้อยแล้ว');
+
+imagepng($im);
+imagedestroy($im);
+imagedestroy($logo);
+imagedestroy($logo_resize);
+imagedestroy($mg);
+
+function ConvertDate($date,$type_show){
+    if(isset($date)){
+        $datearray = explode('/',$date);    
+        $thaimonth=array("","มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฏาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม");
+        $thaishort=array("","ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค.");
+        $year = $datearray[2];
+        if($type_show == "long"){
+            $year = $year;
+            return $value = $datearray[0].' '.$thaimonth[$datearray[1]*1].' '.$year;
+        }else if($type_show == "short"){
+            $year = $year+543;
+            return $value = $datearray[0].' '.$thaishort[$datearray[1]*1].' '.$year;
+        }else if($type_show == "num"){
+            $year = $year+543;
+            return $value = $datearray[0].'/'.$datearray[1].'/'.$year;
+        }else if($type_show == "ad_num"){
+            $year = $year-543;
+            return $value = $datearray[0].'/'.$datearray[1].'/'.$year;
+        }else if($type_show == "num_bc"){
+            return $value = $datearray[0].''.$datearray[1].''.$year;
+        }else if($type_show == "confirm"){
+            return $value = $datearray[0].' '.$thaimonth[$datearray[1]*1].' '.$year;
+        }else if($type_show == "compare"){
+            $year = $year-543;
+            return $value = $datearray[0].'-'.$datearray[1].'-'.$year;
+        }
+    }else{ return ""; }
+}
+
+function GetFormatSlip($slipno){    // จัดการ format slip
+		$subid1 = substr($slipno,0,2);
+        $subid2 = substr($slipno,2,2);
+        $subid3 = substr($slipno,4,8);
+      
+        $slipno = $subid1.'/'.$subid2.'-'.$subid3;
+        return $slipno;
+}
+
+ function convertthai($amount_number)       // หน่วยลงท้าย
+    {
+        $amount_number = number_format($amount_number, 2, ".","");
+        //echo "<br/>amount = " . $amount_number . "<br/>";
+        $pt = strpos($amount_number , ".");
+        $number = $fraction = "";
+        if ($pt === false)
+            $number = $amount_number;
+        else
+        {
+            $number = substr($amount_number, 0, $pt);
+            $fraction = substr($amount_number, $pt + 1);
+        }
+
+        //list($number, $fraction) = explode(".", $number);
+        $ret = "";
+        $baht = ReadNumber ($number);
+        if ($baht != "")
+            $ret .= $baht . "บาท";
+
+        $satang = ReadNumber($fraction);
+        if ($satang != "")
+            $ret .=  $satang . "สตางค์";
+        else
+            $ret .= "ถ้วน";
+        //return iconv("UTF-8", "TIS-620", $ret);
+        return $ret;
+    }
+
+    function ReadNumber($number)   // แปรงตัวเลขเป็นตัวอักษร
+    {
+        $position_call = array("แสน", "หมื่น", "พัน", "ร้อย", "สิบ", "");
+        $number_call = array("", "หนึ่ง", "สอง", "สาม", "สี่", "ห้า", "หก", "เจ็ด", "แปด", "เก้า");
+        $number = $number + 0;
+        $ret = "";
+        if ($number == 0) return $ret;
+        if ($number >= 1000000)
+        {
+            $ret .= ReadNumber(intval($number / 1000000)) . "ล้าน";
+            $number = intval(fmod($number, 1000000));
+        }
+
+        $divider = 100000;
+        $pos = 0;
+        while($number > 0)
+        {
+            $d = intval($number / $divider);
+            $ret .= (($divider == 10) && ($d == 2)) ? "ยี่" :
+            ((($divider == 10) && ($d == 1)) ? "" :
+                ((($divider == 1) && ($d == 1) && ($ret != "")) ? "เอ็ด" : $number_call[$d]));
+            $ret .= ($d ? $position_call[$pos] : "");
+            $number = $number % $divider;
+            $divider = $divider / 10;
+            $pos++;
+        }
+        return $ret;
+    } 
+?>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=tis-620" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <title>test</title>
+        <link href="css/number_slideshow.css" rel="stylesheet" type="text/css" />
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.0/jquery.min.js"></script>
+        <script src="js/number_slideshow.js"></script>
+        <script language="javascript" type="text/javascript">
+            $(function() {
+                $("#number_slideshow").number_slideshow({
+                    slideshow_autoplay: 'enable',//enable disable
+                    slideshow_time_interval: '3000',
+                    slideshow_window_background_color: "#ccc",
+                    slideshow_window_padding: '1',
+                    slideshow_window_width: '600',
+                    slideshow_window_height: '249',
+                    slideshow_border_size: '1',
+                    slideshow_border_color: 'black',
+                    slideshow_show_button: 'enable',//enable disable
+                    slideshow_show_title: 'enable',//enable disable
+                    slideshow_button_text_color: '#CCC',
+                    slideshow_button_background_color: '#333',
+                    slideshow_button_current_background_color: '#666',
+                    slideshow_button_border_color: '#000',
+                    slideshow_button_border_size: '1'
+                });
+        </script>
+
+    </head>
+    <body>
+           <div id="number_slideshow" class="number_slideshow">
+            <ul class="number_slideshow_nav">
+                <li><a href="#">1</a></li>
+                <li><a href="#">2</a></li>
+                <li><a href="#">3</a></li>
+                <li><a href="#">4</a></li>
+            </ul>
+            <div style="clear: both"></div>
+        </div>
+    </body>
+    </html>

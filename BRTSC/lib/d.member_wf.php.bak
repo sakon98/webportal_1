@@ -1,0 +1,26 @@
+<?php
+session_start();
+@header('Content-Type: text/html; charset=tis-620');
+?>
+<meta http-equiv="Content-Type" content="text/html; charset=tis-620" />
+<?php
+require "../s/s.member_info.php";
+?>
+<table width="95%" border="0" align="center" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="right"><font face="Tahoma" size="4"><strong>ข้อมูลสวัสดิการ</strong></font><br />
+      <font face="Tahoma" size="2" color="#FF6600">Member Information</font></td>
+  </tr>
+  <tr>
+    <td align="right"><hr color="#999999" size="1"/></td>
+  </tr>
+</table>
+<table width="70%" border="0" align="center" cellpadding="3" cellspacing="4">
+  <tr>
+    <td colspan="5" align="left"><?include "http://w2.br-tsc.com/webboard/";?>strong></td>
+  </tr>
+</table>
+  <tr>
+    <td align="center"><font color="red">ผู้ที่เป็นสมาชิกหลังจากวันที่ 1 ตุลาคม 2549 เป็นต้นไป<br />
+      อายุการเป็นสมาชิกสิ้นสุดเมื่อสมาชิกผู้นั้นมี อายุครบ 65 ปี</font></td>
+  </tr>
