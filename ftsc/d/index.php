@@ -9,6 +9,8 @@ $connectby = "desktop";
 		$_SESSION['admin']="none";
 	}
 	
+
+//bale
 ?>
 <!DOCTYPE html>
 <html>
@@ -70,30 +72,30 @@ $connectby = "desktop";
                 <td align="left" bgcolor="<?=$bg_login_color?>"><form name="formID1" method="post" action="">
                   <table width="400" border="0" align="center" cellpadding="0" cellspacing="8">
                     <tr style="display:<?=$_SESSION['admin']==""?"none":""?>;">
-                        <td>�Ţ�ѵû�ЪҪ� : </td>
-                      <td><input name="idcard" type="text"class="inputs" id="idcard" placeholder="�Ţ�ѵû�ЪҪ�" autocomplete="on" /></td>
+                        <td>àÅ¢ºÑµÃ»ÃÐªÒª¹ : </td>
+                      <td><input name="idcard" type="text"class="inputs" id="idcard" placeholder="àÅ¢ºÑµÃ»ÃÐªÒª¹" autocomplete="on" /></td>
                     </tr>
                     <tr style="display:<?=$_SESSION['admin']?>;">
-                        <td>����¹��Ҫԡ : </td>
-                      <td><input name="usr" type="text"class="inputs" id="usr" placeholder="����¹��Ҫԡ" autocomplete="off" /></td>
+                        <td>·ÐàºÕÂ¹ÊÁÒªÔ¡ : </td>
+                      <td><input name="usr" type="text"class="inputs" id="usr" placeholder="·ÐàºÕÂ¹ÊÁÒªÔ¡" autocomplete="off" /></td>
                     </tr>
                     <tr style="display:<?=$_SESSION['admin']?>;">
-                        <td>���ʼ�ҹ : </td>
-                      <td><input name="pwd" type="password"class="inputs" id="pwd" placeholder="���ʼ�ҹ"  autocomplete="off"/></td>
+                        <td>ÃËÑÊ¼èÒ¹ : </td>
+                      <td><input name="pwd" type="password"class="inputs" id="pwd" placeholder="ÃËÑÊ¼èÒ¹"  autocomplete="off"/></td>
                     </tr>
                     <tr>
                          <td></td>
-                      <td><input name="Submit" type="submit" value="�������к�" class="button1">
-                        <input name="button" type="reset" value="¡��ԡ" class="button2"></td>
+                      <td><input name="Submit" type="submit" value="à¢éÒÊÙèÃÐºº" class="button1">
+                        <input name="button" type="reset" value="Â¡àÅÔ¡" class="button2"></td>
                     </tr>
 					<!--
                     <tr>
                          <td></td>
                       <td><span class="class1">
                         <?php if($connection == 0){ ?>
-                        <font face='Tahoma' size="3"><a href="register.php">��Ѥ����ԡ��</a></font>
+                        <font face='Tahoma' size="3"><a href="register.php">ÊÁÑ¤ÃãªéºÃÔ¡ÒÃ</a></font>
 	          &nbsp;&nbsp;&nbsp;&nbsp;
-	        <font face='Tahoma' size="3"><a href="description.html">�йӡ����ҹ</a></font>
+	        <font face='Tahoma' size="3"><a href="description.html">á¹Ð¹Ó¡ÒÃãªé§Ò¹</a></font>
                         <?php } ?>
                       </span></td>
                     </tr>
@@ -108,7 +110,7 @@ $connectby = "desktop";
                 <td align="left">&nbsp;</td>
               </tr>
               <tr>
-                <!--<td align="center"><a href="browser.html" target="_blank" alt="��ԡ������ҹ"><img src="../img/extra_btn.png" border="0"></a></td>-->
+                <!--<td align="center"><a href="browser.html" target="_blank" alt="¤ÅÔ¡à¾×èÍÍèÒ¹"><img src="../img/extra_btn.png" border="0"></a></td>-->
               </tr>
             </table></td>
           </tr>
